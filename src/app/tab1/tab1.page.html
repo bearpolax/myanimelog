@@ -7,5 +7,9 @@
 </ion-header>
 
 <ion-content>
-   
+<firebase-ui></firebase-ui> 
+<h1 *ngIf="afAuth.auth.currentUser">
+  Welcome {{afAuth.auth.currentUser.displayName}}
+</h1>
+<ion-button *ngIf="afAuth.auth.currentUser" (click)="signOut()">Sign Out</ion-button>  
 </ion-content>
