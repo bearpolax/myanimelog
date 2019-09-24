@@ -1,0 +1,45 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>
+      Login
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+<firebase-ui></firebase-ui>
+<section *ngIf="(afAuth.user | async) as user; else loginItems">
+  <ion-card>
+    <ion-card-header>
+    </ion-card-title>{{ user.email }}</ion-card-title> 
+    </ion-card-header>
+  </ion-card> 
+</section>
+
+<section>
+  <ion-button (click)="createAccount()">Register</ion-button>
+  <ion-button (click)="Login()">Login</ion-button>
+  <ion-button (click)="logout()">logout</ion-button>
+</section>
+
+<ng-template #loginItems>
+  <h1>You need to log in!</h1>
+  <ion-item>
+    <ion-label>
+      email
+    </ion-label>
+    <ion-input [(ngModel)]="user.email"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-label>
+      Password
+    </ion-label>
+    <ion-input type="password" [(ngModel)]="user.password">
+    </ion-input>
+  </ion-item>
+</ng-template>
+<h1 *ngIf="afAuth.auth.currentUser">
+  Welcome {{afAuth.auth.currentUser.displayName}}
+</h1>
+<ion-button *ngIf="afAuth.auth.currentUser" (click)="signOut()">Sign Out</ion-button>  
+</ion-content>
