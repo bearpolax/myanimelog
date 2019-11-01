@@ -6,6 +6,7 @@ import { AngularFirestore } from '@angular/fire/firestore'
 import { UserService } from '../user.service';
 import { AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
+import { MenuController } from '@ionic/angular';
 
 @Component({
   selector: 'app-register',
@@ -23,8 +24,18 @@ export class RegisterPage implements OnInit {
 		public afstore: AngularFirestore,
 		public user: UserService,
 		public alertController: AlertController,
-		public router: Router
+		public router: Router,
+		public menuCtrl: MenuController,
 		) { }
+		ionViewWillEnter() {
+
+			this.menuCtrl.swipeEnable( false )
+		}
+	
+		ionViewDidLeave() {
+	
+			this.menuCtrl.swipeEnable( true )
+		}
 
 	ngOnInit() {
 	}
@@ -42,14 +53,14 @@ export class RegisterPage implements OnInit {
 	async register() {
 		const { username, password, cpassword } = this
 		if(password !== cpassword) {
-			return console.error("Senhas incompatíveis")
+			this.presentAlert('Erro!', 'A senha não corresponde')
 		}
 
 		try {
 			const res = await this.afAuth.auth.createUserWithEmailAndPassword(username , password)
 
 			this.afstore.doc(`users/${res.user.uid}`).set({
-				username
+				username,
 			})
 
 			this.user.setUser({
