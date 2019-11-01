@@ -5,6 +5,8 @@ import { UserService } from '../user.service';
 import { Router } from '@angular/router';
 import { FirebaseUIModule } from 'firebaseui-angular';
 import { AuthService } from '../services/auth.service';
+import { MenuController } from '@ionic/angular';
+
 
 @Component({
   selector: 'app-login',
@@ -16,7 +18,17 @@ export class LoginPage implements OnInit {
 	username: string = ""
 	password: string = ""
 
-	constructor(public auth: AuthService, public afAuth: AngularFireAuth, public user: UserService, public router: Router) { }
+	constructor(public auth: AuthService, public afAuth: AngularFireAuth, public user: UserService, public router: Router, public menuCtrl: MenuController) { }
+	
+	ionViewWillEnter() {
+
+		this.menuCtrl.swipeEnable( false )
+	}
+
+	ionViewDidLeave() {
+
+		this.menuCtrl.swipeEnable( true )
+	}
 
 	ngOnInit() {
 	}
@@ -32,13 +44,13 @@ export class LoginPage implements OnInit {
 					username,
 					uid: res.user.uid
 				})
-				this.router.navigate(['/home'])
+				this.router.navigate(['/tabs'])
 			}
 		
 		} catch(err) {
 			console.dir(err)
 			if(err.code === "auth/user-not-found") {
-				console.log("User not found")
+				console.log("Usuário não foi encontrado")
 			}
 		}
 		
