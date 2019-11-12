@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { IonSlides } from '@ionic/angular';
+import { MenuController } from '@ionic/angular';
 
 @Component({
   selector: 'app-home',
@@ -12,7 +13,9 @@ export class HomePage {
     speed: 400,
   };
 
-  constructor() { }
+  constructor(private menu: MenuController) {
+   this.menu.enable(true); 
+  }
 
   slidesDidLoad(slides: IonSlides) {
     slides.startAutoplay();
