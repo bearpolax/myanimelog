@@ -7,13 +7,16 @@ import { AngularFirestore, AngularFirestoreDocument } from '@angular/fire/firest
 
 import { Observable, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import { User } from './user.model';
+import { Usuario } from './user.model';
+import { User } from '../interfaces/user';
+
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-    user$: Observable<User>;
+    user$: Observable<Usuario>;
 
     constructor(
+        private afa: AngularFireAuth,
         private afAuth: AngularFireAuth,
         private afs: AngularFirestore,
         private router: Router
@@ -22,7 +25,7 @@ export class AuthService {
         this.user$ = this.afAuth.authState.pipe(
             switchMap(user => {
                 if (user) {
-                    return this.afs.doc<User>(`users/${user.uid}`).valueChanges();
+                    return this.afs.doc<Usuario>(`users/${user.uid}`).valueChanges();
                 } else {
                     return of(null);
                 }
@@ -30,6 +33,13 @@ export class AuthService {
         );
 
     }
+    login(user: User) {
+        return this.afa.auth.signInWithEmailAndPassword(user.email, user.password);
+      }
+    
+      register(user: User) {
+        return this.afa.auth.createUserWithEmailAndPassword(user.email, user.password);
+      }
 
     async googleSignin() {
 		const provider = new auth.GoogleAuthProvider();
@@ -44,9 +54,9 @@ export class AuthService {
         return this.router.navigate(['/login']);
     }
 
-    private updateUserData({uid, email, displayName, photoURL }: User){
+    private updateUserData({uid, email, displayName, photoURL }: Usuario){
        //sets user data to firestore on login
-       const userRef: AngularFirestoreDocument<User> = this.afs.doc(`users/${uid}`);
+       const userRef: AngularFirestoreDocument<Usuario> = this.afs.doc(`users/${uid}`);
        
        const data = {
            uid,

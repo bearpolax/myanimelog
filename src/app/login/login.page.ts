@@ -1,12 +1,14 @@
-import { Component, OnInit } from '@angular/core';
-import { AngularFireAuth } from '@angular/fire/auth'
-import { auth } from 'firebase/app'
-import { UserService } from '../user.service';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { IonSlides, LoadingController, ToastController } from '@ionic/angular';
+import { User } from '../interfaces/user';
+import { AuthService } from 'src/app/services/auth.service';
+import { Keyboard } from '@ionic-native/keyboard/ngx';
 import { Router } from '@angular/router';
-import { FirebaseUIModule } from 'firebaseui-angular';
-import { AuthService } from '../services/auth.service';
-import { MenuController } from '@ionic/angular';
-
+import { MenuController, NavController } from '@ionic/angular'
+import { auth } from 'firebase/app';
+import { AngularFireAuth } from '@angular/fire/auth';
+import { AngularFirestore, AngularFirestoreDocument } from '@angular/fire/firestore';
+ 
 
 @Component({
   selector: 'app-login',
@@ -15,46 +17,70 @@ import { MenuController } from '@ionic/angular';
 })
 export class LoginPage implements OnInit {
 
-	username: string = ""
-	password: string = ""
+	@ViewChild(IonSlides,{static: true}) slides: IonSlides;
+  public wavesPosition: number = 0;
+  private wavesDifference: number = 100;
+  public userLogin: User = {};
+  public userRegister: User = {};
+  private loading: any;
 
-	constructor(public auth: AuthService, public afAuth: AngularFireAuth, public user: UserService, public router: Router, public menuCtrl: MenuController) { }
-	
-	ionViewWillEnter() {
+  constructor(
+    private authService: AuthService,
+    private loadingCtrl: LoadingController,
+    private toastCtrl: ToastController,
+    public keyboard: Keyboard,
+    public router: Router,
+    private navCtrl: NavController,
+    private menuCtrl: MenuController
+  ) { 
+    this.menuCtrl.enable(false);
+  }
 
-		this.menuCtrl.swipeEnable( false )
-	}
+  ngOnInit() { }
 
-	ionViewDidLeave() {
+  segmentChanged(event: any) {
+    if (event.detail.value === 'login') {
+      this.slides.slidePrev();
+      this.wavesPosition += this.wavesDifference;
+    } else {
+      this.slides.slideNext();
+      this.wavesPosition -= this.wavesDifference;
+    }
+  }
 
-		this.menuCtrl.swipeEnable( true )
-	}
+  async login() {
+    await this.presentLoading();
 
-	ngOnInit() {
-	}
+    try {
+      await this.authService.login(this.userLogin);
+    } catch (error) {
+      this.presentToast(error.message);
+    } finally {
+      this.loading.dismiss();
+      this.router.navigate(['/home'])
+    }
+  }
 
-	async login() {
-		const { username, password } = this
-		try {
-			// kind of a hack. 
-			const res = await this.afAuth.auth.signInWithEmailAndPassword(username , password)
-			
-			if(res.user) {
-				this.user.setUser({
-					username,
-					uid: res.user.uid
-				})
-				this.router.navigate(['/tabs'])
-			}
-		
-		} catch(err) {
-			console.dir(err)
-			if(err.code === "auth/user-not-found") {
-				console.log("Usuário não foi encontrado")
-			}
-		}
-		
-	}
-	
+  async register() {
+    await this.presentLoading();
+
+    try {
+      await this.authService.register(this.userRegister);
+    } catch (error) {
+      this.presentToast(error.message);
+    } finally {
+      this.loading.dismiss();
+    }
+  }
+
+  async presentLoading() {
+    this.loading = await this.loadingCtrl.create({ message: 'Aguarde...' });
+    return this.loading.present();
+  }
+
+  async presentToast(message: string) {
+    const toast = await this.toastCtrl.create({ message, duration: 2000 });
+    toast.present();
+  }
 
 }
