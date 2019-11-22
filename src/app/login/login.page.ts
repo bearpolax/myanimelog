@@ -8,6 +8,9 @@ import { MenuController, NavController } from '@ionic/angular'
 import { auth } from 'firebase/app';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { AngularFirestore, AngularFirestoreDocument } from '@angular/fire/firestore';
+import { UserService } from '../user.service'
+import { Observable, of } from 'rxjs';
+import { Usuario } from 'src/app/services/user.model';
  
 
 @Component({
@@ -16,6 +19,7 @@ import { AngularFirestore, AngularFirestoreDocument } from '@angular/fire/firest
   styleUrls: ['./login.page.scss'],
 })
 export class LoginPage implements OnInit {
+  
 
 	@ViewChild(IonSlides,{static: true}) slides: IonSlides;
   public wavesPosition: number = 0;
@@ -23,6 +27,7 @@ export class LoginPage implements OnInit {
   public userLogin: User = {};
   public userRegister: User = {};
   private loading: any;
+  user$: Observable<Usuario>;
 
   constructor(
     private authService: AuthService,
@@ -31,7 +36,10 @@ export class LoginPage implements OnInit {
     public keyboard: Keyboard,
     public router: Router,
     private navCtrl: NavController,
-    private menuCtrl: MenuController
+    private menuCtrl: MenuController,
+    private afa: AngularFireAuth,
+        private afAuth: AngularFireAuth,
+        private afs: AngularFirestore,
   ) { 
     this.menuCtrl.enable(false);
   }
@@ -53,11 +61,11 @@ export class LoginPage implements OnInit {
 
     try {
       await this.authService.login(this.userLogin);
+      this.router.navigate(['/home'])
     } catch (error) {
       this.presentToast(error.message);
     } finally {
       this.loading.dismiss();
-      this.router.navigate(['/home'])
     }
   }
 
@@ -70,6 +78,7 @@ export class LoginPage implements OnInit {
       this.presentToast(error.message);
     } finally {
       this.loading.dismiss();
+      await this.router.navigate(['/login']);
     }
   }
 
@@ -82,5 +91,32 @@ export class LoginPage implements OnInit {
     const toast = await this.toastCtrl.create({ message, duration: 2000 });
     toast.present();
   }
+  async googleSignin() {
+		const provider = new auth.GoogleAuthProvider();
+        const credential = await this.afAuth.auth.signInWithPopup(provider);
+        await this.router.navigate(['/home']);
+        return this.updateUserData(credential.user);
+        
+
+    }
+    async signOut(){
+        await this.afAuth.auth.signOut();
+        return this.router.navigate(['/login']);
+    }
+
+    private updateUserData({uid, email, displayName, photoURL }: Usuario){
+       //sets user data to firestore on login
+       const userRef: AngularFirestoreDocument<Usuario> = this.afs.doc(`users/${uid}`);
+       
+       const data = {
+           uid,
+           email,
+           displayName,
+           photoURL
+       };
+
+       return userRef.set(data, { merge: true });
+
+    }
 
 }

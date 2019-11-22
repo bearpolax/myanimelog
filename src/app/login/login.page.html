@@ -27,7 +27,7 @@
 			  <ion-button class="ion-margin-top" (click)="login()" color="dark" expand="block">
 				Entrar
 			  </ion-button>
-			  <ion-button class="ion-margin-top" (click)="auth.googleSignin()" color="dark" expand="block">
+			  <ion-button class="ion-margin-top" (click)="googleSignin()" color="dark" expand="block">
 				Login com Google
 			  </ion-button>
 			</div>
@@ -36,11 +36,7 @@
 		  <ion-slide>
 			<div class="slide-inner ion-padding">
 			  <span>Cadastro</span>
-	  
-			  <ion-item class="ion-margin-top" lines="none">
-				<ion-input type="text" placeholder="Nome"></ion-input>
-			  </ion-item>
-	  
+			  
 			  <ion-item class="ion-margin-top" lines="none">
 				<ion-input type="email" placeholder="E-mail" [(ngModel)]="userRegister.email"></ion-input>
 			  </ion-item>
